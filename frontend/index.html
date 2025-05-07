@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniMate</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap');
+
+        body {
+            font-family: 'Pixelify Sans', sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+
+            background-color: #000;
+        }
+
+        .main {
+            margin-left: 250px;
+            padding: 20px;
+            min-height: 100vh;
+            background: rgba(41, 40, 40, 1) url(hon.jpg) no-repeat center center;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            box-sizing: border-box;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            background: #3F3F3F;
+            color: white;
+            padding: 20px;
+            position: fixed;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 18px;
+            overflow-y: auto;
+            z-index: 1;
+
+            .top-line {
+                position: absolute;
+                top: 70px;
+                width: 1000px;
+                left: 0px;
+                display: flex;
+                justify-content: center;
+
+                height: 2px;
+                background-color: white;
+                z-index: 10;
+            }
+        }
+
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            width: 100%;
+            max-height: calc(100vh - 200px);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            padding-top: 80px;
+        }
+
+        .message {
+            max-width: 23vw;
+            min-width: 50px;
+            margin-bottom: 15px;
+            padding: 15px 20px;
+            border-radius: 25px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 16px;
+            color: white;
+            word-wrap: break-word;
+            box-sizing: border-box;
+        }
+
+        .user-message {
+            background-color: #4a50ad;
+            margin-left: auto;
+            margin-right: 20vw;
+
+        }
+
+        .bot-message {
+            background-color: rgba(124, 124, 124, 1);
+            color: white;
+            margin-right: auto;
+            margin-left: 20vw;
+
+        }
+
+        .search-container {
+            position: relative;
+            margin-bottom: 20vw;
+
+            display: flex;
+            justify-content: center;
+        }
+
+        .search-box {
+            background-color: #3f3f3f;
+            border: none;
+            border-radius: 35px;
+            width: 100%;
+            max-width: 850px;
+            min-height: 60px;
+            height: auto;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 0px 20px;
+        }
+
+        .search-box textarea {
+            border: none;
+            border-radius: 30px;
+            width: 100%;
+            background: transparent;
+            color: white;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 16px;
+            resize: none;
+            padding: 10px 12px;
+            outline: none;
+
+            line-height: 22px;
+            max-height: calc(22px * 4 + 20px); /* 3 строки + паддинги */
+            overflow-y: auto;       /* скроллим, если больше 3 строк */
+            height: auto;
+            box-sizing: border-box;
+
+            transition: height 0.1s ease-out;
+
+                scrollbar-width: thin;  /* тонкий скролл для Firefox */
+            scrollbar-color: #888 #2c2c2c;  /* цвет скролла (тёмный фон и серый скролл) */
+}
+
+        .search-box textarea::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .search-button {
+            background-color: white;
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 25px;
+            margin-left: 10px;
+            flex-shrink: 0;
+        }
+
+        .welcome-message {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: bold;
+            font-size: 60px;
+            color: #3f3f3f;
+            margin: 0;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            width: 100%;
+        }
+
+        @media (max-width: 1920px) {
+            .search-container {
+                margin-bottom: 200px; /* Понижаем отступ на экранах среднего размера */
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="top-line"></div>
+    <div class="sidebar">
+        <h2> UniMate</h2>
+        <h2>History</h2>
+        <div id="history-list"></div>
+    </div>
+    <div class="main">
+        <div class="chat-container" id="chat-container">
+            <div class="welcome-message" id="welcome-message">How can I help you?</div>
+        </div>
+        <div class="search-container">
+            <div class="search-box">
+                <textarea id="user-input" placeholder="Type your question..." rows="1"></textarea>
+                <button class="search-button" id="send-button">→</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+    const chatContainer = document.querySelector('.chat-container');
+    const searchContainer = document.querySelector('.search-container');
+    const searchBox = document.querySelector('.search-box');
+    const textarea = document.querySelector('.search-box textarea');
+    const searchButton = document.querySelector('.search-button');
+    const welcomeMessage = document.querySelector('.welcome-message');
+
+    let isFirstMessage = true;
+
+    function appendMessage(text, sender) {
+        const message = document.createElement('div');
+        message.classList.add('message', sender === 'user' ? 'user-message' : 'bot-message');
+        message.innerText = text;
+        chatContainer.appendChild(message);
+
+        // Автопрокрутка к последнему сообщению
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+   async function handleUserInput() {
+    const userInput = textarea.value.trim();
+    if (userInput === '') return;
+
+    if (isFirstMessage) {
+        isFirstMessage = false;
+        if (welcomeMessage) {
+            welcomeMessage.remove();
+        }
+        searchContainer.style.marginBottom = '0';
+    }
+    appendMessage(userInput, 'user');
+    textarea.value = '';
+    textarea.style.height = 'auto';
+
+    try {
+        const response = await fetch('/weather-from-text/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ text: userInput }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Ошибка при запросе к серверу');
+        }
+
+        const data = await response.json();
+          appendMessage(data.advice, 'bot');  // <-- выводим только совет
+    } catch (error) {
+        appendMessage('Не удалось получить совет. Попробуйте позже.', 'bot');
+    }
+}
+
+
+    // Обработка клика по кнопке
+    searchButton.addEventListener('click', handleUserInput);
+
+    // Обработка Enter без Shift
+    textarea.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            handleUserInput();
+        }
+    });
+
+    textarea.addEventListener('input', function () {
+        this.style.height = 'auto';
+        this.style.height = this.scrollHeight + 'px';
+
+        const maxHeight = 82; // 3 строки * 22px + 16px паддинга
+        if (this.scrollHeight > maxHeight) {
+            this.style.overflowY = 'auto';
+            this.style.height = maxHeight + 'px';
+        } else {
+            this.style.overflowY = 'hidden';
+        }
+    });
+</script>
+</body>
+</html>

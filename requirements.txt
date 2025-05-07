@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+requests
+streamlit
+pydantic
+langchain
+spacy
+geocoder
+https://github.com/explosion/spacy-models/releases/download/ru_core_news_sm-3.7.0/ru_core_news_sm-3.7.0.tar.gz
